@@ -1,9 +1,28 @@
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using Microsoft.EntityFrameworkCore;
+using SaitynaiBackend.Data;
+using SaitynaiBackend.Data.Models;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
+// Register DbContext and PostgreSQL connection
+builder.Services.AddDbContext<StoreDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("PostgresConnection")));
+
+// Add FluentValidation services and validators
+builder.Services.AddFluentValidationAutoValidation()
+    .AddValidatorsFromAssemblyContaining<GamePostDtoValidator>()
+    .AddValidatorsFromAssemblyContaining<GamePutDtoValidator>()
+    .AddValidatorsFromAssemblyContaining<PublisherPostDtoValidator>()
+    .AddValidatorsFromAssemblyContaining<PublisherPutDtoValidator>()
+    .AddValidatorsFromAssemblyContaining<ReviewPostDtoValidator>()
+    .AddValidatorsFromAssemblyContaining<ReviewPutDtoValidator>();
+
+// Add Swagger for API documentation
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -17,9 +36,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();
