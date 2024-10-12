@@ -1,0 +1,6 @@
+@SaitynaiBackend_HostAddress = http://localhost:5295
+
+GET {{SaitynaiBackend_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
