@@ -22,17 +22,23 @@ public class Publisher
     public class PublisherGetDto()
     {
         public int Id { get; set; }
+        [Required]
         public required string Name { get; set; }
+        [Required]
         public required string Description { get; set; }
     }
     public class PublisherPostDto()
     {
+        [Required]
         public required string Name { get; set; }
+        [Required]
         public required string Description { get; set; }
     }
     public class PublisherPutDto()
     {
+        [Required]
         public required string Name { get; set; }
+        [Required]
         public required string Description { get; set; }
     }
 }

@@ -1,5 +1,6 @@
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SaitynaiBackend.Data;
 using SaitynaiBackend.Data.Models;
@@ -7,7 +8,10 @@ using SaitynaiBackend.Data.Models;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers(o =>
+{
+    o.Filters.Add<ValidationFilter>();
+});
 
 // Register DbContext and PostgreSQL connection
 builder.Services.AddDbContext<StoreDbContext>(options =>

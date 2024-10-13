@@ -25,17 +25,23 @@ namespace SaitynaiBackend.Data.Models
         public class GameGetDto()
         {
             public int Id { get; set; }
-            public required string Title { get; set; }
-            public required string Description { get; set; }
+            [Required]
+            public  string Title { get; set; }
+            [Required]
+            public  string Description { get; set; }
         }
         public class GamePostDto()
         {
+            [Required]
             public required string Title { get; set; }
+            [Required]
             public required string Description { get; set; }
         }
         public class GamePutDto
         {
+            [Required]
             public required string Title { get; set; }
+            [Required]
             public required string Description { get; set; }
         }
     }

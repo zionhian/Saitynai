@@ -84,6 +84,11 @@ public class ReviewsController : ControllerBase
         {
             return NotFound($"Game with ID {gameId} not found for publisher with ID {publisherId}.");
         }
+        if (reviewDto.Rating < 1 || reviewDto.Rating >10)
+        {
+            await Console.Out.WriteLineAsync("Rating not in bounds");
+            return UnprocessableEntity();
+        }
 
         var review = new Review
         {

@@ -29,11 +29,14 @@ namespace SaitynaiBackend.Data.Models
         }
         public class ReviewPutDto()
         {
+            [Required]
             public required int Rating { get; set; }
             public string? Comment { get; set; }
         }
-        public class ReviewPostDto()
+        public
+          class ReviewPostDto()
         {
+            [Required]
             public required int Rating { get; set; }
             public string? Comment { get; set; }
 
