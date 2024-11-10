@@ -10,6 +10,9 @@ namespace SaitynaiBackend.Data.Models
         public string? Comment { get; set; }
         [Required]
         public required Game Game { get; set; }
+        [Required]
+        public string UserId { get; set; }
+        public StoreUser Author { get; set; }
 
         public ReviewGetDto ToGetDto()
         {

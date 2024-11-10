@@ -12,6 +12,7 @@ namespace SaitynaiBackend.Data.Models
         [Required]
         public required Publisher Publisher { get; set; }
         public ICollection<Review> Reviews { get; set; } = new List<Review>();
+        public List<StoreUser> Owners { get; set; } = new List<StoreUser>();
 
         public GameGetDto ToDto()
         {

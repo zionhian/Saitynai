@@ -2,6 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using SaitynaiBackend.Data.Models;
 using SaitynaiBackend.Data;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
+using System.Security.Claims;
 
 [Route("api/publishers/{publisherId}/games")]
 [ApiController]
@@ -15,6 +18,7 @@ public class GamesController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize]
     public async Task<ActionResult<IEnumerable<Game.GameGetDto>>> GetGames(int publisherId)
     {
         var publisherExists = await _context.Publishers.AnyAsync(p => p.Id == publisherId);
@@ -56,12 +60,16 @@ public class GamesController : ControllerBase
 
     // POST: api/publishers/{publisherId}/games (Create a new game for a publisher)
     [HttpPost]
+    [Authorize(Roles = "Publisher")]
     public async Task<ActionResult<Game.GameGetDto>> CreateGame(int publisherId,[FromBody] Game.GamePostDto gameDto)
     {
-        var publisher = await _context.Publishers.FindAsync(publisherId);
+        var userId = User.FindFirstValue("sub");
+        var publisher = await _context.Publishers
+            .Where(p => p.Id == publisherId && p.OwnerId == userId)
+            .FirstOrDefaultAsync();
         if (publisher == null)
         {
-            return NotFound($"Publisher with ID {publisherId} not found.");
+            return Forbid();
         }
 
         var game = new Game
@@ -79,21 +87,17 @@ public class GamesController : ControllerBase
 
     // PUT: api/publishers/{publisherId}/games/{id} (Update game by ID)
     [HttpPut("{id}")]
+    [Authorize(Roles = "Publisher")]
     public async Task<IActionResult> UpdateGame(int publisherId, int id,[FromBody] Game.GamePutDto gameDto)
     {
-        var publisherExists = await _context.Publishers.AnyAsync(p => p.Id == publisherId);
-        if (!publisherExists)
-        {
-            return NotFound($"Publisher with ID {publisherId} not found.");
-        }
-
+        var userId = User.FindFirstValue("sub");
         var game = await _context.Games
-            .Where(g => g.Publisher.Id == publisherId && g.Id == id)
+            .Where(g => g.Publisher.Id == publisherId && g.Id == id && g.Publisher.OwnerId == userId)
             .FirstOrDefaultAsync();
 
         if (game == null)
         {
-            return NotFound($"Game with ID {id} not found for publisher with ID {publisherId}.");
+            return Forbid();
         }
 
         game.Title = gameDto.Title;
@@ -106,6 +110,7 @@ public class GamesController : ControllerBase
 
     // DELETE: api/publishers/{publisherId}/games/{id} (Delete game by ID)
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Publisher")]
     public async Task<IActionResult> DeleteGame(int publisherId, int id)
     {
         var publisherExists = await _context.Publishers.AnyAsync(p => p.Id == publisherId);
@@ -122,10 +127,44 @@ public class GamesController : ControllerBase
         {
             return NotFound($"Game with ID {id} not found for publisher with ID {publisherId}.");
         }
+        if (game.Owners.Any())
+        {
+            return BadRequest("Cannot delete the game because it has owners");
+        }
 
         _context.Games.Remove(game);
         await _context.SaveChangesAsync();
 
         return NoContent();
+    }
+    [HttpPost("{id}/buy")]
+    [Authorize(Roles = "User")]
+    public async Task<IActionResult> BuyGame(int id)
+    {
+        var userId = User.FindFirstValue("sub");
+        var user = await _context.Users
+            .Include(u => u.OwnedGames)
+            .FirstOrDefaultAsync(u => u.Id == userId);
+
+        if (user.PublishCompany != null)
+        {
+            return Forbid();
+        }
+
+        var game = await _context.Games.FindAsync(id);
+        if (game == null)
+        {
+            return NotFound("Game not found.");
+        }
+
+        if (user.OwnedGames.Contains(game))
+        {
+            return BadRequest("Game already owned by the user.");
+        }
+
+        user.OwnedGames.Add(game);
+        await _context.SaveChangesAsync();
+
+        return Ok("Game purchased successfully.");
     }
 }

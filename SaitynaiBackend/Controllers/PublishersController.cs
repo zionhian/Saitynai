@@ -2,16 +2,22 @@
 using Microsoft.EntityFrameworkCore;
 using SaitynaiBackend.Data.Models;
 using SaitynaiBackend.Data;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using SaitynaiBackend.Auth;
+using System.Security.Claims;
 
 [Route("api/publishers")]
 [ApiController]
 public class PublishersController : ControllerBase
 {
     private readonly StoreDbContext _context;
+    private readonly UserManager<StoreUser> _userManager;
 
-    public PublishersController(StoreDbContext context)
+    public PublishersController(StoreDbContext context, UserManager<StoreUser> userManager)
     {
         _context = context;
+        _userManager = userManager;
     }
     [HttpGet]
     public async Task<ActionResult<List<Publisher.PublisherGetDto>>> GetPublishers()
@@ -21,13 +27,31 @@ public class PublishersController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<Publisher.PublisherGetDto>> CreatePublisher([FromBody]Publisher.PublisherPostDto publisherDto)
+    [Authorize(Roles = UserStoreRoles.Admin)]
+    public async Task<ActionResult<Publisher.PublisherGetDto>> CreatePublisher([FromBody] Publisher.PublisherPostDto publisherDto)
     {
+        var user = await _context.Users
+            .Include(u => u.OwnedGames)
+            .FirstOrDefaultAsync(u => u.Id == publisherDto.UserId);
+        if (user == null)
+        {
+            return BadRequest("User not found");
+        }
+        if (user.PublishCompany != null)
+        {
+            return BadRequest("User already is a publisher");
+        }
+        if (_context.Publishers.Any(o => o.OwnerId.Equals(user.Id)))
+        {
+            return BadRequest("User already is a publisher");
+        }
         var publisher = new Publisher
         {
             Name = publisherDto.Name,
-            Description = publisherDto.Description
+            Description = publisherDto.Description,
+            OwnerId = publisherDto.UserId
         };
+        await _userManager.AddToRoleAsync(user, "Publisher");
 
         _context.Publishers.Add(publisher);
         await _context.SaveChangesAsync();
@@ -49,12 +73,17 @@ public class PublishersController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize(Roles = UserStoreRoles.Publisher)]
     public async Task<IActionResult> UpdatePublisher(int id, [FromBody] Publisher.PublisherPutDto publisherDto)
     {
-        var publisher = await _context.Publishers.FindAsync(id);
+        var userId = User.FindFirstValue("sub");
+        var publisher = await _context.Publishers
+            .Where(p => p.Id == id && p.OwnerId == userId)
+            .FirstOrDefaultAsync();
+
         if (publisher == null)
         {
-            return NotFound();
+            return Forbid();
         }
 
         publisher.Name = publisherDto.Name;
@@ -66,6 +95,7 @@ public class PublishersController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = UserStoreRoles.Admin)]
     public async Task<IActionResult> DeletePublisher(int id)
     {
         var publisher = await _context.Publishers.FindAsync(id);
@@ -75,6 +105,36 @@ public class PublishersController : ControllerBase
         }
 
         _context.Publishers.Remove(publisher);
+        await _context.SaveChangesAsync();
+
+        return NoContent();
+    }
+    [HttpPost("{id}/assign")]
+    [Authorize(Roles = UserStoreRoles.Admin)]
+    public async Task<IActionResult> AssignUserAsPublisher(int id, [FromBody] string userId)
+    {
+        var user = await _context.Users
+                .Include(u => u.PublishCompany)
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+        if (user == null)
+        {
+            return NotFound("User not found.");
+        }
+
+        if (user.PublishCompany != null)
+        {
+            return BadRequest("This user is already a publisher for another company.");
+        }
+
+        var publisher = await _context.Publishers.FindAsync(id);
+        if (publisher == null)
+        {
+            return NotFound("Publisher not found.");
+        }
+
+        user.PublishCompany = publisher;
+        await _userManager.AddToRoleAsync(user, "Publisher");
         await _context.SaveChangesAsync();
 
         return NoContent();

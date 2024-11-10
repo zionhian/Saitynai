@@ -2,6 +2,9 @@
 using SaitynaiBackend.Data.Models;
 using SaitynaiBackend.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
+using SaitynaiBackend.Auth;
+using System.Security.Claims;
 
 [Route("api/publishers/{publisherId}/games/{gameId}/reviews")]
 [ApiController]
@@ -68,39 +71,38 @@ public class ReviewsController : ControllerBase
 
     // POST: api/publishers/{publisherId}/games/{gameId}/reviews (Create a new review for a game)
     [HttpPost]
+    [Authorize(Roles = UserStoreRoles.User)]
     public async Task<ActionResult<Review.ReviewGetDto>> CreateReview(int publisherId, int gameId, [FromBody] Review.ReviewPostDto reviewDto)
     {
-        var publisherExists = await _context.Publishers.AnyAsync(p => p.Id == publisherId);
-        if (!publisherExists)
+        var userId = User.FindFirstValue("sub");
+        var user = await _context.Users
+            .Include(u => u.OwnedGames)
+            .FirstOrDefaultAsync(u => u.Id == userId);
+
+        if (user == null || !user.OwnedGames.Any(g => g.Id == gameId))
         {
-            return NotFound($"Publisher with ID {publisherId} not found.");
+            return Forbid();
         }
 
-        var game = await _context.Games
-            .Where(g => g.Publisher.Id == publisherId && g.Id == gameId)
-            .FirstOrDefaultAsync();
-
+        var game = await _context.Games.FindAsync(gameId);
         if (game == null)
         {
-            return NotFound($"Game with ID {gameId} not found for publisher with ID {publisherId}.");
-        }
-        if (reviewDto.Rating < 1 || reviewDto.Rating >10)
-        {
-            await Console.Out.WriteLineAsync("Rating not in bounds");
-            return UnprocessableEntity();
+            return NotFound("Game not found.");
         }
 
         var review = new Review
         {
             Rating = reviewDto.Rating,
             Comment = reviewDto.Comment,
-            Game = game
+            Game = game,
+            UserId = userId,
+            Author = user
         };
 
         _context.Reviews.Add(review);
         await _context.SaveChangesAsync();
 
-        return CreatedAtAction(nameof(GetReview), new { publisherId = publisherId, gameId = gameId, id = review.Id }, review.ToGetDto());
+        return CreatedAtAction(nameof(GetReview), new { publisherId, gameId, id = review.Id }, review.ToGetDto());
     }
 
     // PUT: api/publishers/{publisherId}/games/{gameId}/reviews/{id} (Update review by ID)
@@ -126,6 +128,16 @@ public class ReviewsController : ControllerBase
         {
             return NotFound($"Review with ID {id} not found for game with ID {gameId} and publisher with ID {publisherId}.");
         }
+        var userId = User.FindFirstValue("sub");
+        if (review.UserId != userId)
+        {
+            return Forbid();
+        }
+        if (reviewDto.Rating < 1 || reviewDto.Rating > 10)
+        {
+            await Console.Out.WriteLineAsync("Rating not in bounds");
+            return UnprocessableEntity();
+        }
 
         review.Rating = reviewDto.Rating;
         review.Comment = reviewDto.Comment;
@@ -137,6 +149,7 @@ public class ReviewsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = UserStoreRoles.Admin)]
     public async Task<IActionResult> DeleteReview(int publisherId, int gameId, int id)
     {
         var publisherExists = await _context.Publishers.AnyAsync(p => p.Id == publisherId);
