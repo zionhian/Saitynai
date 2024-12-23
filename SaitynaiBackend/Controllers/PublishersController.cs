@@ -30,33 +30,32 @@ public class PublishersController : ControllerBase
     [Authorize(Roles = UserStoreRoles.Admin)]
     public async Task<ActionResult<Publisher.PublisherGetDto>> CreatePublisher([FromBody] Publisher.PublisherPostDto publisherDto)
     {
+        var userId = User.FindFirstValue("sub");
+        if (userId == null)
+        {
+            return BadRequest("User is already a publisher");
+        }
+        await Console.Out.WriteLineAsync(userId);
         var user = await _context.Users
             .Include(u => u.OwnedGames)
-            .FirstOrDefaultAsync(u => u.Id == publisherDto.UserId);
+            .FirstOrDefaultAsync(u => u.Id == userId);
         if (user == null)
         {
             return BadRequest("User not found");
         }
-        if (user.PublishCompany != null)
-        {
-            return BadRequest("User already is a publisher");
-        }
-        if (_context.Publishers.Any(o => o.OwnerId.Equals(user.Id)))
-        {
-            return BadRequest("User already is a publisher");
-        }
+
         var publisher = new Publisher
         {
             Name = publisherDto.Name,
             Description = publisherDto.Description,
-            OwnerId = publisherDto.UserId
+            OwnerId = userId
         };
         await _userManager.AddToRoleAsync(user, "Publisher");
 
         _context.Publishers.Add(publisher);
         await _context.SaveChangesAsync();
 
-        return CreatedAtAction(nameof(GetPublisher), new { id = publisher.Id }, publisher.ToDto());
+        return Ok();
     }
 
     // GET: Get a specific publisher
@@ -73,12 +72,12 @@ public class PublishersController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    [Authorize(Roles = UserStoreRoles.Publisher)]
+    [Authorize(Roles = UserStoreRoles.Admin)]
     public async Task<IActionResult> UpdatePublisher(int id, [FromBody] Publisher.PublisherPutDto publisherDto)
     {
         var userId = User.FindFirstValue("sub");
         var publisher = await _context.Publishers
-            .Where(p => p.Id == id && p.OwnerId == userId)
+            .Where(p => p.Id == id)
             .FirstOrDefaultAsync();
 
         if (publisher == null)
@@ -109,12 +108,11 @@ public class PublishersController : ControllerBase
 
         return NoContent();
     }
-    [HttpPost("{id}/assign")]
+    /*[HttpPost("{id}/assign")]
     [Authorize(Roles = UserStoreRoles.Admin)]
     public async Task<IActionResult> AssignUserAsPublisher(int id, [FromBody] string userId)
     {
         var user = await _context.Users
-                .Include(u => u.PublishCompany)
                 .FirstOrDefaultAsync(u => u.Id == userId);
 
         if (user == null)
@@ -137,6 +135,6 @@ public class PublishersController : ControllerBase
         await _userManager.AddToRoleAsync(user, "Publisher");
         await _context.SaveChangesAsync();
 
-        return NoContent();
-    }
+        return NoContent();*/
+    //}
 }

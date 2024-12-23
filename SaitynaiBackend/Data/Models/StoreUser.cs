@@ -6,7 +6,6 @@ namespace SaitynaiBackend.Data.Models
     {
         public List<Game> OwnedGames { get; set; } = new List<Game>();
         public List<Review> Reviews { get; set; } = new List<Review>();
-        public Publisher PublishCompany { get; set; }
 
     }
 }

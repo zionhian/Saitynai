@@ -20,7 +20,8 @@ namespace SaitynaiBackend.Data.Models
             {
                 Id = Id,
                 Title = Title,
-                Description = Description
+                Description = Description,
+                PublisherUserId = Publisher.OwnerId
             };
         }
         public class GameGetDto()
@@ -29,7 +30,9 @@ namespace SaitynaiBackend.Data.Models
             [Required]
             public  string Title { get; set; }
             [Required]
-            public  string Description { get; set; }
+            public string Description { get; set; }
+            public bool userOwnsGame { get; set; }
+            public string PublisherUserId { get; set; }
         }
         public class GamePostDto()
         {

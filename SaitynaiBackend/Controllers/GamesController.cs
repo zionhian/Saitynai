@@ -18,7 +18,6 @@ public class GamesController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize]
     public async Task<ActionResult<IEnumerable<Game.GameGetDto>>> GetGames(int publisherId)
     {
         var publisherExists = await _context.Publishers.AnyAsync(p => p.Id == publisherId);
@@ -28,9 +27,21 @@ public class GamesController : ControllerBase
         }
 
         var games = await _context.Games
-            .Where(g => g.Publisher.Id == publisherId)
+            .Where(g => g.Publisher.Id == publisherId).Include(a => a.Publisher)
             .Select(g => g.ToDto())
             .ToListAsync();
+        var userId = User.FindFirstValue("sub");
+        var user = await _context.Users
+            .Include(u => u.OwnedGames)
+            .FirstOrDefaultAsync(u => u.Id == userId);
+        if (user != null)
+        {
+            foreach (var game in games) { 
+                if (user.OwnedGames.Exists(o => o.Id == game.Id))
+                        game.userOwnsGame = true;
+            }
+        }
+
 
         return Ok(games);
     }
@@ -46,7 +57,7 @@ public class GamesController : ControllerBase
         }
 
         var game = await _context.Games
-            .Where(g => g.Publisher.Id == publisherId && g.Id == id)
+            .Where(g => g.Publisher.Id == publisherId && g.Id == id).Include(a => a.Publisher)
             .Select(g => g.ToDto())
             .FirstOrDefaultAsync();
 
@@ -54,7 +65,19 @@ public class GamesController : ControllerBase
         {
             return NotFound($"Game with ID {id} not found for publisher with ID {publisherId}.");
         }
+        var userId = User.FindFirstValue("sub");
+        await Console.Out.WriteLineAsync(userId);
+        var user = await _context.Users
+            .Include(u => u.OwnedGames)
+            .FirstOrDefaultAsync(u => u.Id == userId);
+        if (user != null)
+        {
+            if (user.OwnedGames.Exists(g => g.Id == game.Id))
+            {
+                game.userOwnsGame = true;
 
+            }
+        }
         return Ok(game);
     }
 
@@ -82,7 +105,7 @@ public class GamesController : ControllerBase
         _context.Games.Add(game);
         await _context.SaveChangesAsync();
 
-        return CreatedAtAction(nameof(GetGame), new { publisherId = publisherId, id = game.Id }, game.ToDto());
+        return Ok();
     }
 
     // PUT: api/publishers/{publisherId}/games/{id} (Update game by ID)
@@ -146,10 +169,7 @@ public class GamesController : ControllerBase
             .Include(u => u.OwnedGames)
             .FirstOrDefaultAsync(u => u.Id == userId);
 
-        if (user.PublishCompany != null)
-        {
-            return Forbid();
-        }
+
 
         var game = await _context.Games.FindAsync(id);
         if (game == null)

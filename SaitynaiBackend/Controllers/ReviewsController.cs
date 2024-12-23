@@ -18,6 +18,7 @@ public class ReviewsController : ControllerBase
     }
 
     [HttpGet]
+
     public async Task<ActionResult<IEnumerable<Review.ReviewGetDto>>> GetReviews(int publisherId, int gameId)
     {
         var publisherExists = await _context.Publishers.AnyAsync(p => p.Id == publisherId);
@@ -36,12 +37,27 @@ public class ReviewsController : ControllerBase
             .Where(r => r.Game.Publisher.Id == publisherId && r.Game.Id == gameId)
             .Select(r => r.ToGetDto())
             .ToListAsync();
-
+        var userId = User.FindFirstValue("sub");
+        var user = await _context.Users
+            .Include(u => u.OwnedGames)
+            .FirstOrDefaultAsync(u => u.Id == userId);
+        if (user != null)
+        {
+            foreach (var review in reviews)
+            {
+                if (user.Reviews.Exists(r => r.Author.Equals(user)))
+                {
+                    review.MyRating = true;
+                }
+                    
+            }
+        }
         return Ok(reviews);
     }
 
     // GET: api/publishers/{publisherId}/games/{gameId}/reviews/{id} (Get review by ID)
     [HttpGet("{id}")]
+
     public async Task<ActionResult<Review.ReviewGetDto>> GetReview(int publisherId, int gameId, int id)
     {
         var publisherExists = await _context.Publishers.AnyAsync(p => p.Id == publisherId);
@@ -65,6 +81,17 @@ public class ReviewsController : ControllerBase
         {
             return NotFound($"Review with ID {id} not found for game with ID {gameId} and publisher with ID {publisherId}.");
         }
+        var userId = User.FindFirstValue("sub");
+        var user = await _context.Users
+            .Include(u => u.OwnedGames)
+            .FirstOrDefaultAsync(u => u.Id == userId);
+        if (userId != null)
+        {
+            if (user != null && user.Reviews.Exists(r => r.Author.Equals(user)))
+            {
+                review.MyRating = true;
+            }
+        }
 
         return Ok(review);
     }
@@ -79,7 +106,7 @@ public class ReviewsController : ControllerBase
             .Include(u => u.OwnedGames)
             .FirstOrDefaultAsync(u => u.Id == userId);
 
-        if (user == null || !user.OwnedGames.Any(g => g.Id == gameId))
+        if (user == null)
         {
             return Forbid();
         }
@@ -102,7 +129,7 @@ public class ReviewsController : ControllerBase
         _context.Reviews.Add(review);
         await _context.SaveChangesAsync();
 
-        return CreatedAtAction(nameof(GetReview), new { publisherId, gameId, id = review.Id }, review.ToGetDto());
+        return Ok();
     }
 
     // PUT: api/publishers/{publisherId}/games/{gameId}/reviews/{id} (Update review by ID)

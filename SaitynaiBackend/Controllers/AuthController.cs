@@ -32,7 +32,7 @@ namespace SaitynaiBackend.Controllers
         }
         [HttpPost]
         [Route("register")]
-        public async Task<IActionResult> Register(RegisterUserDto registerUserDto)
+        public async Task<ActionResult<RegisterUserDto>> Register(RegisterUserDto registerUserDto)
         {
             var user = await _userManager.FindByNameAsync(registerUserDto.UserName);
             if (user != null)
@@ -54,7 +54,7 @@ namespace SaitynaiBackend.Controllers
         }
         [HttpPost]
         [Route("login")]
-        public async Task<IActionResult> Login(LoginDto loginDto)
+        public async Task<ActionResult<SuccessfulLoginDto>> Login(LoginDto loginDto)
         {
             var user = await _userManager.FindByNameAsync(loginDto.UserName);
             if (user == null)
@@ -83,7 +83,7 @@ namespace SaitynaiBackend.Controllers
         }
         [HttpPost]
         [Route("accessToken")]
-        public async Task<IActionResult> AccessToken()
+        public async Task<ActionResult<SuccessfulLoginDto>> AccessToken()
         {
             if (!HttpContext.Request.Cookies.TryGetValue("RefreshToken",out var refreshToken))
             {

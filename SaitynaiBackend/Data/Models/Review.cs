@@ -28,6 +28,7 @@ namespace SaitynaiBackend.Data.Models
             public int Id { get; set; }
             public int Rating { get; set; }
             public string? Comment { get; set; }
+            public bool MyRating { get; set; }
 
         }
         public class ReviewPutDto()

@@ -39,8 +39,6 @@ public class Publisher
         public required string Name { get; set; }
         [Required]
         public required string Description { get; set; }
-        [Required]
-        public required string UserId { get; set; }
     }
     public class PublisherPutDto()
     {
