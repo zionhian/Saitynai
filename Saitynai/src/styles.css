@@ -1,0 +1,88 @@
+
+* {
+  font-family: "Roboto", serif;
+}
+
+ .container {
+   margin: 20px;
+   flex: auto;
+   justify-content: center;
+   align-items: center;
+ }
+
+
+.publisher-details, .game-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.publisher-info, .game-info {
+  flex: 1;
+  text-align: left;
+  margin-right: 10px;
+}
+
+.publisher-actions, .game-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.add-game {
+  text-align: right;
+  margin-bottom: 20px;
+}
+
+.add-btn {
+  background-color: green;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.edit-btn {
+  background-color: blue;
+  color: white;
+  border: none;
+  padding: 5px 15px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.delete-btn {
+  background-color: red;
+  color: white;
+  border: none;
+  padding: 5px 15px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.comment {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #ddd;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+}
+
+.comment-details {
+  flex: 3;
+}
+
+.comment-rating {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.rating-face {
+  width: 30px;
+  height: 30px;
+}

@@ -1,0 +1,42 @@
+<div class="container">
+  <div class="game-details">
+    <h1>{{ game.title }}</h1>
+    <p><strong>Description:</strong> {{ game.description }}</p>
+  </div>
+
+  <div class="add-comment-section">
+    <h2>Write a Review</h2>
+    <form (ngSubmit)="onSubmitComment()">
+      <textarea [(ngModel)]="userComment.comment" placeholder="Write your review..." name="commentText" required></textarea>
+      <select [(ngModel)]="userComment.rating" name="commentRating" required>
+        <option value="1">1 - Poor</option>
+        <option value="2">2 - Fair</option>
+        <option value="3">3 - Good</option>
+        <option value="4">4 - Very Good</option>
+        <option value="5">5 - Excellent</option>
+      </select>
+      <button type="submit" class="submit-btn">Submit</button>
+    </form>
+  </div>
+
+  <div class="comments-list">
+    <h2>Reviews</h2>
+    <div *ngFor="let comment of comments" class="comment">
+      <div class="comment-details">
+        <p>{{ comment.comment }}</p>
+      </div>
+      <div class="comment-rating">
+        <div class="rating-face">
+          <img *ngIf="comment.rating! <= 2" src="https://cdn.jsdelivr.net/gh/twbs/icons/icons/emoji-frown.svg" alt="Sad face" />
+          <img *ngIf="comment.rating! === 3" src="https://cdn.jsdelivr.net/gh/twbs/icons/icons/emoji-neutral.svg" alt="Neutral face" />
+          <img *ngIf="comment.rating! >= 4" src="https://cdn.jsdelivr.net/gh/twbs/icons/icons/emoji-smile.svg" alt="Happy face" />
+        </div>
+        <span>Rating: {{ comment.rating }}</span>
+        <div class="comment-actions">
+          <button *ngIf="comment.myRating" (click)="onEditComment(comment)" class="edit-btn">Edit</button>
+          <button *ngIf="comment.myRating" (click)="onDeleteComment(comment.id!)" class="delete-btn">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

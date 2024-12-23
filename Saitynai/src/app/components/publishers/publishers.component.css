@@ -1,0 +1,92 @@
+.container {
+  margin: 20px;
+  flex: auto;
+  justify-content: center;
+}
+
+.publisher {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 15px;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  background-color: #f9f9f9;
+  justify-content: center;
+  flex: auto;
+}
+
+.publisher-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.publisher-info {
+  flex: 1;
+  text-align: left;
+  margin-right: 10px;
+}
+
+.publisher-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.edit-btn {
+  background-color: blue;
+  color: white;
+  border: none;
+  padding: 5px 15px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.delete-btn {
+  background-color: red;
+  color: white;
+  border: none;
+  padding: 5px 15px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.edit-form {
+  margin-top: 10px;
+}
+
+.edit-form input {
+  margin-right: 10px;
+  padding: 5px;
+  width: calc(50% - 15px);
+}
+.add-publisher {
+  margin-bottom: 20px;
+  padding: 10px;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.add-form {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.add-form input {
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.add-btn {
+  background-color: green;
+  color: white;
+  border: none;
+  padding: 5px 15px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+

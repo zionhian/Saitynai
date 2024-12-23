@@ -1,0 +1,33 @@
+<div class="container">
+  <h1>Publishers</h1>
+  <!-- Add New Publisher Section -->
+  <div *ngIf="authSerivce.isAdmin()" class="add-publisher">
+    <h3>Add New Publisher</h3>
+    <div class="add-form">
+      <input [(ngModel)]="newPublisher.name" placeholder="Name" />
+      <input [(ngModel)]="newPublisher.description" placeholder="Description" />
+      <button class="add-btn" (click)="onAddPublisher()">Add Publisher</button>
+    </div>
+  </div>
+
+  <!-- Existing Publishers List -->
+  <div class="publisher" *ngFor="let publisher of publishers">
+    <div class="publisher-details">
+      <a class="publisher-info" [routerLink]="['/publishers', publisher.id, 'games']">
+        {{ publisher.name }}
+      </a>
+      <span class="publisher-info">{{ publisher.description }}</span>
+      <div class="publisher-actions">
+        <button class="edit-btn" *ngIf="authSerivce.isAdmin()" (click)="onEditPublisher(publisher.id)">Edit</button>
+        <button class="delete-btn" *ngIf="authSerivce.isAdmin()" (click)="onDeletePublisher(publisher.id)">Delete</button>
+      </div>
+    </div>
+    <div class="edit-form" *ngIf="isEditingPublisher(publisher.id)">
+      <input [(ngModel)]="publisher.name" placeholder="Name" />
+      <input [(ngModel)]="publisher.description" placeholder="Description" />
+      <button (click)="onSavePublisher(publisher.id)">Save</button>
+      <button (click)="onCancelEditPublisher(publisher.id)">Cancel</button>
+    </div>
+  </div>
+  <app-modal></app-modal>
+</div>

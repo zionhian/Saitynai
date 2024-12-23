@@ -1,0 +1,17 @@
+<!-- Navbar Component HTML: navbar.component.html -->
+<nav class="navbar">
+  <div class="navbar-brand">
+    <button class="hamburger" (click)="toggleMenu()" aria-label="Toggle menu">
+      &#9776; <!-- Hamburger icon -->
+    </button>
+  </div>
+
+  <!-- Sliding Navigation Menu -->
+  <ul [class.active]="isMenuOpen" class="navbar-links">
+    <li><a routerLink="/" (click)="closeMenu()">Home</a></li>
+    <li><a routerLink="/publishers" (click)="closeMenu()">Publishers</a></li>
+    <li *ngIf="!authService.isLoggedin()"><a routerLink="/login" (click)="closeMenu()">Login</a></li>
+    <li *ngIf="!authService.isLoggedin()"><a routerLink="/register" (click)="closeMenu()">Register</a></li>
+    <li *ngIf="authService.isLoggedin()"><a (click)="logout()">Logout</a></li>
+  </ul>
+</nav>

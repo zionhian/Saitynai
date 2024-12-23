@@ -1,0 +1,75 @@
+/* General Navbar Styles */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #333;
+  color: white;
+  padding: 10px 20px;
+  position: relative;
+  z-index: 1000;
+}
+
+.navbar a {
+  color: white;
+  text-decoration: none;
+  margin: 0 10px;
+}
+
+.navbar a:hover {
+  text-decoration: underline;
+}
+
+/* Hamburger Icon */
+.hamburger {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: none; /* Hidden on larger screens */
+  z-index: 1100;
+}
+
+/* Navigation Links (Desktop) */
+.navbar-links {
+  list-style-type: none;
+  display: flex;
+  gap: 15px;
+}
+
+/* Media Query for Mobile View */
+@media (max-width: 1008px) {
+  .hamburger {
+    display: block; /* Show hamburger icon */
+  }
+
+  .navbar-links {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    left: -100%; /* Start off-screen */
+    height: 100vh; /* Take full screen height */
+    width: 250px; /* Width of the sliding menu */
+    background-color: #333;
+    padding-top: 60px;
+    transition: left 0.3s ease-in-out; /* Slide-in effect */
+    z-index: 1000;
+  }
+
+  /* When active, slide the menu into view */
+  .navbar-links.active {
+    left: 0;
+  }
+
+  .navbar-links li {
+    margin: 20px 0;
+    text-align: center;
+  }
+
+  .navbar-links a {
+    font-size: 1.2rem;
+    display: block;
+  }
+}

@@ -1,0 +1,12 @@
+<div class="modal" *ngIf="isVisible" @slideIn>
+  <div class="modal-content">
+    <p>{{ message }}</p>
+    <div class="modal-actions" *ngIf="isConfirmation">
+      <button class="btn btn-success" (click)="onConfirm()">Yes</button>
+      <button class="btn btn-secondary" (click)="onCancel()">No</button>
+    </div>
+    <div class="modal-actions" *ngIf="!isConfirmation">
+      <button class="btn btn-primary" (click)="onCancel()">OK</button>
+    </div>
+  </div>
+</div>

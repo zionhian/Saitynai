@@ -1,0 +1,29 @@
+<app-modal *ngIf="isVisible" (onClose)="onCloseModal()">
+  <h2>Create New Game</h2>
+  <form (ngSubmit)="onCreateGame()">
+    <div class="form-group">
+      <label for="gameName">Game Name</label>
+      <input
+        id="gameName"
+        [(ngModel)]="newGame.title"
+        name="gameName"
+        class="form-control"
+        placeholder="Enter game name"
+        required>
+    </div>
+    <div class="form-group">
+      <label for="gameDescription">Description</label>
+      <textarea
+        id="gameDescription"
+        [(ngModel)]="newGame.description"
+        name="gameDescription"
+        class="form-control"
+        placeholder="Enter game description"
+        required></textarea>
+    </div>
+    <div class="modal-actions">
+      <button type="submit" class="btn btn-success">Create</button>
+      <button type="button" class="btn btn-secondary" (click)="onCloseModal()">Cancel</button>
+    </div>
+  </form>
+</app-modal>
